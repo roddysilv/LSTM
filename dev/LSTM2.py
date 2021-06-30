@@ -37,6 +37,8 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 
 # Carregando os dados
 df = pd.read_csv(path, index_col=('date'), engine='python')
+print(df.corr())
+
 try:
     weather = df.pop('weather')
     pressure = df.pop('pressure')
@@ -107,7 +109,8 @@ model.add(Dropout(rate=0.03))
 model.add(Dense(1,
                 activation='linear'))
 
-model.compile(loss='mse', optimizer='adam')
+model.compile(loss='mse', 
+              optimizer='adam')
 
 optimizers.Adam(lr=0.01,
                 beta_1=0.9,
@@ -121,8 +124,8 @@ history = model.fit(train_X,
                     train_y,
                     epochs=epochs,
                     batch_size=batch_size, 
-                    validation_split=0.2,
-                    #validation_data=(test_X, test_y),
+                    # validation_split=0.2,
+                    validation_data=(test_X, test_y),
                     verbose=2,
                     shuffle=False,
                     callbacks=[es])
