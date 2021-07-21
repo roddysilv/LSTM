@@ -11,7 +11,8 @@ from keras import optimizers
 
 numpy.random.seed(5)
 
-path = '../LSTM/data/residential/all/Residential_1_treated.csv'
+# path = '../data/separated_by_house_type/all/Residential_1_treated.csv'
+path = '../data/daily/Residential_1_daily_sum.csv'
 
 # converter série em aprendizagem supervisionada
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -41,8 +42,8 @@ print(df.corr())
 
 try:
     weather = df.pop('weather')
-    pressure = df.pop('pressure')
-    ac = df.pop('ac_output')
+    # pressure = df.pop('pressure')
+    # ac = df.pop('ac_output')
 except:
     pass
 values = df.values
