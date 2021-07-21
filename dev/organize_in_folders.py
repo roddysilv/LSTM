@@ -52,7 +52,7 @@ for i in range(1,29):
         df = pd.merge(Weather_YVR,Solar, on=['date'])
         df = pd.merge(df,h, on=['date'])
         
-    df = df[['date','hour','humidity','pressure','dc_output','ac_output','weather','energy_kWh']]
+    df = df[['date','hour','temperature','humidity','pressure','dc_output','ac_output','weather','energy_kWh']]
         
     if i != 7:           
         df.to_csv('../data/separated_by_house_type/' + path + '/Residential_' + str(i) + '.csv',index=False)
@@ -78,7 +78,7 @@ for i in range(1,29):
         df = pd.merge(Weather_YVR,Solar, on=['date'])
         df = pd.merge(df,h, on=['date'])
         
-    df = df[['date','hour','humidity','pressure','dc_output','ac_output','weather','energy_kWh']]
+    df = df[['date','hour','temperature','humidity','pressure','dc_output','ac_output','weather','energy_kWh']]
                
     if i != 7:           
         df.to_csv('../data/separated_by_house_type/' + path + '/Residential_' + str(i) + '_treated.csv',index=False)
