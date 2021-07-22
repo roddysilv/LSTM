@@ -73,7 +73,7 @@ def evaluate_timeseries(timeseries, window_size, filter_length, nb_filter):
     
     model.fit(X_train,
               y_train,
-              epochs=1000,
+              epochs=5000,
               batch_size=300,
               validation_data=(X_test, y_test),
               verbose=2)
