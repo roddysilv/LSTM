@@ -1,3 +1,4 @@
+from logging import exception
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
@@ -46,12 +47,12 @@ def media_movel(DataFrame,n):
     
     return y.values
 
-def read(DataFrame,n_in,n_out,n_r):
+def read(DataFrame,n_in,n_out,n_media):
     
     # Carregando os dados  
     dates = DataFrame.index
         
-    values = media_movel(DataFrame,n_r)
+    values = media_movel(DataFrame,n_media)
     
     values = values.astype('float32')
     
@@ -82,13 +83,13 @@ def read(DataFrame,n_in,n_out,n_r):
          
     return train_X, test_X, train_y, test_y, dates[:split], dates[split:]
 
-def plots(train_y,test_y,trainPredict,testPredict):
+def plots(res, train_y,test_y,trainPredict,testPredict):
     # Plot scatter Treino
     plt.figure()
     plt.plot(train_y,trainPredict,'o',label='trainPredict')
     plt.plot(train_y,train_y,label='trainY')
     plt.legend()
-    plt.title("Train - Scatter")
+    plt.title("Train - Scatter  Residential_" + str(res))
     plt.xlabel("real")
     plt.ylabel('predicted')
     # plt.savefig('Resultados/scatterTreino' + str(res) + '.png')
@@ -98,7 +99,7 @@ def plots(train_y,test_y,trainPredict,testPredict):
     plt.figure()
     plt.plot(test_y,testPredict,'o',label='testPredict')
     plt.plot(test_y,test_y,label='testY')
-    plt.title("Test - Scatter")
+    plt.title("Test - Scatter Residential_" + str(res))
     plt.xlabel("real")
     plt.ylabel('predicted')
     plt.legend()
@@ -110,7 +111,7 @@ def plots(train_y,test_y,trainPredict,testPredict):
     plt.plot(train_y,label='trainY')
     plt.plot(trainPredict,'--',label='trainPredict')
     plt.legend()
-    plt.title("Train - Plot")
+    plt.title("Train - Plot Residential_" + str(res))
     # plt.savefig('Resultados/plotTreino' + str(res) + '.png')
     plt.show()
     
@@ -118,7 +119,7 @@ def plots(train_y,test_y,trainPredict,testPredict):
     fig = plt.figure()
     plt.plot( test_y,label='testY')
     plt.plot( testPredict,'--',label='testPredict')
-    plt.title("Test - plot")
+    plt.title("Test - plot Residential_" + str(res))
     plt.legend()
     # plt.savefig('Resultados/plotTest' + str(res) + '.png')
     plt.show()
@@ -128,7 +129,7 @@ def plots(train_y,test_y,trainPredict,testPredict):
     plt.plot(test_y[:150],label='testY')
     plt.plot( testPredict[:150],'--',label='testPredict')
     # fig.autofmt_xdate()
-    plt.title("Test - plot")
+    plt.title("Test - plot Residential_" + str(res))
     plt.legend()
     # plt.savefig('Resultados/plotTestShort' + str(res) + '.png')
     plt.show()
@@ -138,14 +139,17 @@ def plots(train_y,test_y,trainPredict,testPredict):
     plt.plot(test_y[:50],label='testY')
     plt.plot( testPredict[:50],'--',label='testPredict')
     # fig.autofmt_xdate()
-    plt.title("Test - plot")
+    plt.title("Test - plot Residential_" + str(res))
     plt.legend()
     # plt.savefig('Resultados/plotTestShort' + str(res) + '.png')
     plt.show()
 
-def LSTM_run(DataFrame,batch_size,epochs,patience,n_in,n_out,n_r):
-           
-    train_X, test_X, train_y, test_y , dates_train, dates_test= read(DataFrame,n_in,n_out,n_r)
+def LSTM_run(res,DataFrame,batch_size,epochs,patience,n_in,n_out,n_media):
+
+    try: DataFrame.pop('weather')
+    except: pass
+
+    train_X, test_X, train_y, test_y , dates_train, dates_test= read(DataFrame,n_in,n_out,n_media)
     
     # design network
        
@@ -163,18 +167,18 @@ def LSTM_run(DataFrame,batch_size,epochs,patience,n_in,n_out,n_r):
                     kernel_regularizer=regularizers.l1(l1=1e-5),
                     bias_regularizer=regularizers.l2(1e-4),
                     activity_regularizer=regularizers.l2(1e-5),
-                    return_sequences = True
+                    return_sequences = False
                     ))
     
     model.add(Dropout(rate=0.03))
     
-    model.add(LSTM(2**5,
-                    # input_shape=(train_X.shape[1], train_X.shape[2]),
-                    activation='linear',
-                    # return_sequences = True
-                    ))
+    # model.add(LSTM(2**4,
+    #                 # input_shape=(train_X.shape[1], train_X.shape[2]),
+    #                 activation='linear',
+    #                 # return_sequences = True
+    #                 ))
     
-    model.add(Dropout(rate=0.03))
+    # model.add(Dropout(rate=0.03))
     
     # model.add(LSTM(64,
     #                # input_shape=(train_X.shape[1], train_X.shape[2]),
@@ -257,24 +261,27 @@ def LSTM_run(DataFrame,batch_size,epochs,patience,n_in,n_out,n_r):
     score = r2_score(test_y, testPredict)
     print('R2:', round(score,4))
       
-    plots(train_y, test_y, trainPredict, testPredict)
+    plots(res,train_y, test_y, trainPredict, testPredict)
 
     #return train_X, train_y, test_X, test_y, trainPredict, testPredict
 
-path = '../../LSTM - DESENVOLVIMENTO/csv_merged/Horário/Residential_1.csv'
+res = 1
+dummie = False
+if dummie: path = '../../LSTM - DESENVOLVIMENTO/csv_merged/Horário/Residential_'+str(res)+'_dummie.csv'
+else : path =  '../../LSTM - DESENVOLVIMENTO/csv_merged/Horário/Residential_'+str(res)+'.csv'
 
 batch_size = 2**10
 epochs = 1000
 patience = 100
 n_in = 3
 n_out = 1
-n_r = 5
+n_media = 5
 
 df = pd.read_csv(path,infer_datetime_format=True,index_col='date')
 
 tStart = t.time()
 
-LSTM_run(df,batch_size,epochs,patience,n_in,n_out,n_r)
+LSTM_run(res,df,batch_size,epochs,patience,n_in,n_out,n_media)
 
 tEnd = t.time()
 
