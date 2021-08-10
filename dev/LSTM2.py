@@ -51,10 +51,8 @@ def read(DataFrame,n_in,n_out,n_r):
     # Carregando os dados  
     dates = DataFrame.index
         
-    # values = r.remove_ruido(df,n_r)
     values = media_movel(DataFrame,n_r)
     
-    # values = DataFrame.values
     values = values.astype('float32')
     
     # Normalizando os dados
@@ -70,9 +68,9 @@ def read(DataFrame,n_in,n_out,n_r):
         
     # dividindo em conjuntos de treinamento e teste
     values = reframed.values
-    n_train_hours = int(values.shape[0]*0.7)
-    train = values[:n_train_hours, :]
-    test = values[n_train_hours:, :]
+    split = int(values.shape[0]*0.7)
+    train = values[:split, :]
+    test = values[split:, :]
     
     # dividindo em entradas e saídas
     train_X, train_y = train[:, :-1], train[:, -1]
@@ -82,7 +80,7 @@ def read(DataFrame,n_in,n_out,n_r):
     train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
     test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
          
-    return train_X, test_X, train_y, test_y, dates[:n_train_hours], dates[n_train_hours:]
+    return train_X, test_X, train_y, test_y, dates[:split], dates[split:]
 
 def plots(train_y,test_y,trainPredict,testPredict):
     # Plot scatter Treino
@@ -226,25 +224,26 @@ def LSTM_run(DataFrame,batch_size,epochs,patience,n_in,n_out,n_r):
     
     model.compile(loss='mse', optimizer='adam')
     
-    '''optimizers.Adam(lr=0.8,
-                    beta_1=0.9,
-                    beta_2=0.999,
-                    epsilon=None,
-                    decay=0.0,
-                    amsgrad=False
-                    )'''
+    # optimizers.Adam(lr=0.8,
+    #                 beta_1=0.9,
+    #                 beta_2=0.999,
+    #                 epsilon=None,
+    #                 decay=0.0,
+    #                 amsgrad=False
+    #                 )
     
     # fit network
     history = model.fit(train_X,
                         train_y,
                         epochs=epochs,
                         batch_size=batch_size, 
+                        # validation_split=0.2,
                         validation_data=(test_X, test_y),
-                        verbose=2,
+                        verbose=0,
                         shuffle=False,
                         callbacks=[es]
                         )
-    
+
     plt.plot(history.history['loss'], label='train')
     plt.plot(history.history['val_loss'], label='test')
     plt.legend()
@@ -257,7 +256,7 @@ def LSTM_run(DataFrame,batch_size,epochs,patience,n_in,n_out,n_r):
     
     score = r2_score(test_y, testPredict)
     print('R2:', round(score,4))
-    
+      
     plots(train_y, test_y, trainPredict, testPredict)
 
     #return train_X, train_y, test_X, test_y, trainPredict, testPredict
@@ -266,7 +265,7 @@ path = '../../LSTM - DESENVOLVIMENTO/csv_merged/Horário/Residential_1.csv'
 
 batch_size = 2**10
 epochs = 1000
-patience = 5
+patience = 100
 n_in = 3
 n_out = 1
 n_r = 5
